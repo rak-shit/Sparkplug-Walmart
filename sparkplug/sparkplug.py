@@ -4,8 +4,9 @@ pd.set_option("display.max_rows", None, "display.max_columns", None)
 
 
 
-items = ['Bread','Wheat','Rice']
+
 def find_sellers():
+    items = ['Bread','Wheat','Rice']
     item_sellers = dict()
     i = 0
     for item in items:
@@ -16,11 +17,19 @@ def find_sellers():
 
     return item_sellers
 
+def map_mkt():
+    data = pd.read_csv("data.csv", encoding = "ISO-8859-1")
+    data = data[(data["cm_name"] == "Wheat")]
+    data = data[['mkt_name']]
+    data = pd.unique(data)
+    return data
+
 def cluster():
     data = pd.read_csv("data.csv", encoding = "ISO-8859-1")
     data = data[(data["cm_name"] == "Wheat") & (data["adm0_name"] == 'India')]
     df = data[['cm_name','mkt_name', 'mp_month', 'mp_price']]
     # print(data_reduced)
+
     plt.scatter(df.iloc[:, 2], df.iloc[:, 3].values.astype(int))
     plt.xlabel('Month')
     plt.ylabel('CM price')
