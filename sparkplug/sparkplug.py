@@ -1,3 +1,4 @@
+import statistics
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -8,7 +9,7 @@ pd.set_option("display.max_rows", None, "display.max_columns", None)
 
 def find_sellers():
     data = pd.read_csv("data.csv", encoding = "ISO-8859-1")
-    data = data[(data["cm_name"] == "Wheat") & (data["adm0_name"] == 'India')]
+    data = data[(data["cm_name"] == "Wheat") & (data["adm0_name"] == 'Afghanistan')]
     data_reduced= data[['cm_name','mkt_name', 'mp_month', 'mp_price']]
     items = ['Bread','Wheat','Rice']
     item_sellers = dict()
@@ -24,7 +25,7 @@ def find_sellers():
 
 def map_mkt():
     data = pd.read_csv("data.csv", encoding = "ISO-8859-1")
-    data = data[(data["cm_name"] == "Wheat") & (data["adm0_name"] == 'India')]
+    data = data[(data["cm_name"] == "Wheat") & (data["adm0_name"] == 'Afghanistan')]
     data = data[['mkt_name']]
     data = data.drop_duplicates()
     col_mkt_list = data['mkt_name'].tolist()
@@ -38,7 +39,7 @@ def map_mkt():
 
 def cluster(mkt_dict):
     data = pd.read_csv("data.csv", encoding = "ISO-8859-1")
-    data = data[(data["cm_name"] == "Wheat") & (data["adm0_name"] == 'India')]
+    data = data[(data["cm_name"] == "Wheat") & (data["adm0_name"] == 'Afghanistan')]
     df = data[['cm_name','mkt_name', 'mp_month', 'mp_price']]
     # print(data_reduced)
     print(df)
@@ -54,11 +55,19 @@ def cluster(mkt_dict):
     isoF_outliers_values = new_data[iso_forest.predict(new_data) == -1]
     print(isoF_outliers_values)
 
+    isoF_outliers_values = isoF_outliers_values[(data["mp_price"] > 21)]
+
     plt.scatter(isoF_outliers_values.iloc[:, 0], isoF_outliers_values.iloc[:, 1].values.astype(int))
     plt.xlabel('MKT')
     plt.ylabel('CM price')
     plt.title('Visualization of raw data')
     plt.show()
+
+def threshold():
+    data = pd.read_csv("data.csv", encoding = "ISO-8859-1")
+    data = data[(data["cm_name"] == "Wheat") & (data["mp_year"]==2013) & (data["adm0_name"] == 'Afghanistan')]
+    df = data[['mp_price']]
+    return statistics.median(df['mp_price'].values.tolist())
 
 
 def main():
@@ -67,3 +76,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+# print(threshold())
+
