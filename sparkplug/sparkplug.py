@@ -1,4 +1,8 @@
+import numpy as np
 import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.ensemble import IsolationForest
 
 pd.set_option("display.max_rows", None, "display.max_columns", None)
 
@@ -20,7 +24,7 @@ def find_sellers():
 
 def map_mkt():
     data = pd.read_csv("data.csv", encoding = "ISO-8859-1")
-    data = data[(data["cm_name"] == "Wheat")]
+    data = data[(data["cm_name"] == "Wheat") & (data["adm0_name"] == 'India')]
     data = data[['mkt_name']]
     data = data.drop_duplicates()
     col_mkt_list = data['mkt_name'].tolist()
@@ -32,19 +36,26 @@ def map_mkt():
     
     return mkt_dict
 
-def cluster():
+def cluster(mkt_dict):
     data = pd.read_csv("data.csv", encoding = "ISO-8859-1")
     data = data[(data["cm_name"] == "Wheat") & (data["adm0_name"] == 'India')]
     df = data[['cm_name','mkt_name', 'mp_month', 'mp_price']]
     # print(data_reduced)
+    print(df)
 
-    plt.scatter(df.iloc[:, 2], df.iloc[:, 3].values.astype(int))
-    plt.xlabel('Month')
-    plt.ylabel('CM price')
-    plt.title('Visualization of raw data')
-    plt.show()
+    for x in df.index:
+        df.at[x, 'mkt_name'] = mkt_dict[df.at[x, 'mkt_name']]  
+
+    new_data = df[['mkt_name', 'mp_price']]
+
+    iso_forest = IsolationForest(n_estimators=300, contamination=0.10)
+    iso_forest = iso_forest.fit(new_data)
+
+
 
 def main():
-    print(map_mkt())
+    mkt_dict = map_mkt()
+    cluster(mkt_dict)
 
-main()
+if __name__ == "__main__":
+    main()
