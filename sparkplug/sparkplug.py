@@ -50,7 +50,15 @@ def cluster(mkt_dict):
 
     iso_forest = IsolationForest(n_estimators=300, contamination=0.10)
     iso_forest = iso_forest.fit(new_data)
+    isof_outliers = iso_forest.predict(new_data)
+    isoF_outliers_values = new_data[iso_forest.predict(new_data) == -1]
+    print(isoF_outliers_values)
 
+    plt.scatter(isoF_outliers_values.iloc[:, 0], isoF_outliers_values.iloc[:, 1].values.astype(int))
+    plt.xlabel('MKT')
+    plt.ylabel('CM price')
+    plt.title('Visualization of raw data')
+    plt.show()
 
 
 def main():
