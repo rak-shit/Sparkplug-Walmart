@@ -8,119 +8,124 @@ from sklearn.ensemble import IsolationForest
 
 pd.set_option("display.max_rows", None, "display.max_columns", None)
 
-def find_sellers(commodity, country):
-    data = pd.read_csv("data.csv", encoding = "ISO-8859-1")
-    data = data[(data["cm_name"] == commodity) & (data["adm0_name"] == country)]
-    data_reduced= data[['cm_name','mkt_name', 'mp_month', 'mp_price']]
-    items = ['Bread','Wheat','Rice']
-    item_sellers = dict()
-    i = 0
-    for item in items:
-        for i in range(len(data_reduced)):
-            if data_reduced.iloc[i]['cm_name'] == item:
-                if item not in list(item_sellers.keys()):
-                    item_sellers[item] = [data_reduced.iloc[i]['mkt_name']]
 
-    print(item_sellers)
-    return item_sellers
+class Dashboard:
+    def __init__(self):
+        self.data = pd.read_csv("data.csv", encoding = "ISO-8859-1")
 
-def map_mkt(commodity_name, country):
-    data = pd.read_csv("data.csv", encoding = "ISO-8859-1")
-    data = data[(data["cm_name"] == commodity_name) & (data["adm0_name"] == country)]
-    data = data[['mkt_name']]
-    data = data.drop_duplicates()
-    col_mkt_list = data['mkt_name'].tolist()
-    mkt_dict = {}
-    i = 0
-    for x in col_mkt_list:
-        mkt_dict[x] = i
-        i = i + 1
-    
-    return mkt_dict
+    def find_sellers(self, commodity, country):
+        # data = pd.read_csv("data.csv", encoding = "ISO-8859-1")
+        data = self.data
+        data = data[(data["cm_name"] == commodity) & (data["adm0_name"] == country)]
+        data_reduced= data[['cm_name','mkt_name', 'mp_month', 'mp_price']]
+        items = ['Bread','Wheat','Rice']
+        item_sellers = dict()
+        i = 0
+        for item in items:
+            for i in range(len(data_reduced)):
+                if data_reduced.iloc[i]['cm_name'] == item:
+                    if item not in list(item_sellers.keys()):
+                        item_sellers[item] = [data_reduced.iloc[i]['mkt_name']]
 
-def threshold(commodity, year, country):
-    data = pd.read_csv("data.csv", encoding = "ISO-8859-1")
-    data = data[(data["cm_name"] == commodity) & (data["mp_year"]==year) & (data["adm0_name"] == country)]
-    df = data[['mp_price']]
-    return statistics.median(df['mp_price'].values.tolist()) + 5
+        print(item_sellers)
+        return item_sellers
 
-def threshold_all(commodity, year, country):
-    data = pd.read_csv("data.csv", encoding = "ISO-8859-1")
-    all_commodity_data = data[(data["mp_year"]==year) & (data["adm0_name"] == country)]
-    all_commodities =  list(set(all_commodity_data['cm_name'].values.tolist()))
-    # return all_commodities
-    thresholds_dict_cm = dict()
-    for cm in all_commodities:
-        # print(cm)
-        data = all_commodity_data[(all_commodity_data["cm_name"] == cm)]
+    def map_mkt(self, commodity_name, country):
+        data = self.data
+        data = data[(data["cm_name"] == commodity_name) & (data["adm0_name"] == country)]
+        data = data[['mkt_name']]
+        data = data.drop_duplicates()
+        col_mkt_list = data['mkt_name'].tolist()
+        mkt_dict = {}
+        i = 0
+        for x in col_mkt_list:
+            mkt_dict[x] = i
+            i = i + 1
+        
+        return mkt_dict
+
+    def threshold(self, commodity, year, country):
+        data = self.data
+        data = data[(data["cm_name"] == commodity) & (data["mp_year"]==year) & (data["adm0_name"] == country)]
         df = data[['mp_price']]
-        # print(df['mp_price'].values.tolist())
-        try:
-            threshold = statistics.median(df['mp_price'].values.tolist()) + 5
-        except statistics.StatisticsError:
-            threshold = 0
-        thresholds_dict_cm[cm] = threshold
-    return thresholds_dict_cm
+        return statistics.median(df['mp_price'].values.tolist()) + 5
 
-def average_rate_change(commodity, country):
-    data = pd.read_csv("data.csv", encoding = "ISO-8859-1")
-    data = data[(data["cm_name"] == commodity) & (data["adm0_name"] == country)]
-    df = data[['cm_name','mkt_name', 'mp_month', 'mp_price']]
-    prices_list =  df['mp_price'].values.tolist()
-    avg_rate_increase = 0
-    length = len(prices_list)
-    for index in range(0, len(prices_list)-1):
-        diff = prices_list[index+1] - prices_list[index]
-        if not diff * (-1) > 0:
-            avg_rate_increase += diff
-    return avg_rate_increase/(length-1)
+    def threshold_all(self, commodity, year, country):
+        data = self.data
+        all_commodity_data = data[(data["mp_year"]==year) & (data["adm0_name"] == country)]
+        all_commodities =  list(set(all_commodity_data['cm_name'].values.tolist()))
+        # return all_commodities
+        thresholds_dict_cm = dict()
+        for cm in all_commodities:
+            # print(cm)
+            data = all_commodity_data[(all_commodity_data["cm_name"] == cm)]
+            df = data[['mp_price']]
+            # print(df['mp_price'].values.tolist())
+            try:
+                threshold = statistics.median(df['mp_price'].values.tolist()) + 5
+            except statistics.StatisticsError:
+                threshold = 0
+            thresholds_dict_cm[cm] = threshold
+        return thresholds_dict_cm
 
-
-
-
-
-def cluster(mkt_dict, year, commodity, country):
-    data = pd.read_csv("data.csv", encoding = "ISO-8859-1")
-    data = data[(data["cm_name"] == commodity) & (data["adm0_name"] == country)]
-    df = data[['cm_name','mkt_name', 'mp_month', 'mp_price']]
-    # print(data_reduced)
-    # print(df)
-
-    for x in df.index:
-        df.at[x, 'mkt_name'] = mkt_dict[df.at[x, 'mkt_name']]  
-
-    new_data = df[['mkt_name', 'mp_price']]
-
-    iso_forest = IsolationForest(n_estimators=300, contamination=0.10)
-    iso_forest = iso_forest.fit(new_data)
-    isof_outliers = iso_forest.predict(new_data)
-    isoF_outliers_values = new_data[iso_forest.predict(new_data) == -1]
-    # print(isoF_outliers_values)
-
-    isoF_outliers_values = isoF_outliers_values[(data["mp_price"] > threshold(commodity, year, country))]
-
-    # plt.scatter(isoF_outliers_values.iloc[:, 0], isoF_outliers_values.iloc[:, 1].values.astype(int))
-    # plt.xlabel('MKT')
-    # plt.ylabel('CM price')
-    # plt.title('Visualization of raw data')
-    # plt.show()
-
-    x = {
-        "raw_data": new_data.values.tolist(),
-        "outliers": isoF_outliers_values.values.tolist(),
-        "threshold_all": threshold_all(commodity, year, country)
-    }
-
-    # convert into JSON:
-    y = json.dumps(x)
-    return y
+    def average_rate_change(self, commodity, country):
+        data = self.data
+        data = data[(data["cm_name"] == commodity) & (data["adm0_name"] == country)]
+        df = data[['cm_name','mkt_name', 'mp_month', 'mp_price']]
+        prices_list =  df['mp_price'].values.tolist()
+        avg_rate_increase = 0
+        length = len(prices_list)
+        for index in range(0, len(prices_list)-1):
+            diff = prices_list[index+1] - prices_list[index]
+            if not diff * (-1) > 0:
+                avg_rate_increase += diff
+        return avg_rate_increase/(length-1)
 
 
 
-def main():
-    mkt_dict = map_mkt()
-    cluster(mkt_dict)
-    print(average_rate_change())
+
+
+    def cluster(self, mkt_dict, year, commodity, country):
+        data = self.data
+        data = data[(data["cm_name"] == commodity) & (data["adm0_name"] == country)]
+        df = data[['cm_name','mkt_name', 'mp_month', 'mp_price']]
+        # print(data_reduced)
+        # print(df)
+
+        for x in df.index:
+            df.at[x, 'mkt_name'] = mkt_dict[df.at[x, 'mkt_name']]  
+
+        new_data = df[['mkt_name', 'mp_price']]
+
+        iso_forest = IsolationForest(n_estimators=300, contamination=0.10)
+        iso_forest = iso_forest.fit(new_data)
+        isof_outliers = iso_forest.predict(new_data)
+        isoF_outliers_values = new_data[iso_forest.predict(new_data) == -1]
+        # print(isoF_outliers_values)
+
+        isoF_outliers_values = isoF_outliers_values[(data["mp_price"] > self.threshold(commodity, year, country))]
+
+        # plt.scatter(isoF_outliers_values.iloc[:, 0], isoF_outliers_values.iloc[:, 1].values.astype(int))
+        # plt.xlabel('MKT')
+        # plt.ylabel('CM price')
+        # plt.title('Visualization of raw data')
+        # plt.show()
+
+        x = {
+            "raw_data": new_data.values.tolist(),
+            "outliers": isoF_outliers_values.values.tolist(),
+            "threshold_all": self.threshold_all(commodity, year, country)
+        }
+
+        # convert into JSON:
+        y = json.dumps(x)
+        return y
+
+
+
+    def main():
+        mkt_dict = self.map_mkt()
+        self.cluster(mkt_dict)
 
 # if __name__ == "__main__":
 #     print(cluster('Wheat', 2013, 'India'))

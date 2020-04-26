@@ -8,7 +8,7 @@ import logging
 from logging import Formatter, FileHandler
 from forms import *
 import os
-from sparkplug import *
+from sparkplug import Dashboard
 
 #----------------------------------------------------------------------------#
 # App Config.
@@ -58,12 +58,12 @@ def home(commodity_name, year, country):
         return cluster_obj
     
     year = int(year)
-    sellers = find_sellers(commodity_name, country)
-    mkt_dict = map_mkt(commodity_name, country)
+    dashboard = Dashboard()
+    sellers = dashboard.find_sellers(commodity_name, country)
+    mkt_dict = dashboard.map_mkt(commodity_name, country)
     # thresh = threshold(commodity_name, year, country)
-    cluster_obj = cluster(mkt_dict, year, commodity_name, country)
-    return cluster_obj 
-
+    cluster_obj = dashboard.cluster(mkt_dict, year, commodity_name, country)
+    return cluster_obj
 
 # @app.route('/about')
 # def about():
