@@ -45,7 +45,7 @@ def login_required(test):
 def index():
     commodity_name = 'Wheat'
     year = 2013
-    country = 'Afghanistan'
+    country = 'India'
     return redirect(url_for('home',commodity_name=commodity_name, year=year, country=country))
 
 @app.route('/monitor/<commodity_name>/<year>/<country>', methods=['POST', 'GET'])

@@ -44,6 +44,24 @@ def threshold(commodity, year, country):
     df = data[['mp_price']]
     return statistics.median(df['mp_price'].values.tolist()) + 5
 
+def threshold_all(commodity, year, country):
+    data = pd.read_csv("data.csv", encoding = "ISO-8859-1")
+    all_commodity_data = data[(data["mp_year"]==year) & (data["adm0_name"] == country)]
+    all_commodities =  list(set(all_commodity_data['cm_name'].values.tolist()))
+    # return all_commodities
+    thresholds_dict_cm = dict()
+    for cm in all_commodities:
+        # print(cm)
+        data = all_commodity_data[(all_commodity_data["cm_name"] == cm)]
+        df = data[['mp_price']]
+        # print(df['mp_price'].values.tolist())
+        try:
+            threshold = statistics.median(df['mp_price'].values.tolist()) + 5
+        except statistics.StatisticsError:
+            threshold = 0
+        thresholds_dict_cm[cm] = threshold
+    return thresholds_dict_cm
+
 def average_rate_change(commodity, country):
     data = pd.read_csv("data.csv", encoding = "ISO-8859-1")
     data = data[(data["cm_name"] == commodity) & (data["adm0_name"] == country)]
@@ -88,8 +106,9 @@ def cluster(mkt_dict, year, commodity, country):
     # plt.show()
 
     x = {
-    "raw_data": new_data.values.tolist(),
-    "outliers": isoF_outliers_values.values.tolist()
+        "raw_data": new_data.values.tolist(),
+        "outliers": isoF_outliers_values.values.tolist(),
+        "threshold_all": threshold_all(commodity, year, country)
     }
 
     # convert into JSON:
@@ -104,6 +123,7 @@ def main():
     print(average_rate_change())
 
 # if __name__ == "__main__":
+#     print(cluster('Wheat', 2013, 'India'))
 
     # threshold('Wheat', 2013, 'Afghanistan')
     # print(average_rate_change())
