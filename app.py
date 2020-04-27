@@ -56,11 +56,9 @@ def index():
 @app.route('/monitor/<commodity_name>/<year>/<country>', methods=['POST', 'GET'])
 def home(commodity_name, year, country):
     year = int(year)
-    if 'commodity_name' in request.form.keys() and \
-        'year' in request.form.keys() and 'country' \
-        and request.form.keys() and request.method == 'POST':
-        sellers = find_sellers(request.form['commodity_name'], request.form['country'])
-        mkt_dict = map_mkt(request.form['commodity_name'], request.form['country'])
+    if request.args.get(commodity_name) and request.args.get(year) and request.args.get(country):
+        sellers = find_sellers(request.args.get(commodity_name), request.args.get(country))
+        mkt_dict = map_mkt(rrequest.args.get(commodity_name), request.args.get(country))
     else:
         dashboard = Dashboard()
         sellers = dashboard.find_sellers(commodity_name, country)
