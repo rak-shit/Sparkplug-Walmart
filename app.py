@@ -12,6 +12,7 @@ import os
 import pandas as pd
 from sparkplug import Dashboard
 from send_email import send_mail
+from flask_cors import CORS
 
 #----------------------------------------------------------------------------#
 # App Config.
@@ -20,6 +21,7 @@ from send_email import send_mail
 app = Flask(__name__)
 app.config.from_object('config')
 #db = SQLAlchemy(app)
+CORS(app)
 
 # Automatically tear down SQLAlchemy.
 '''
