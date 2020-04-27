@@ -58,7 +58,7 @@ def home(commodity_name, year, country):
     year = int(year)
     if request.args.get(commodity_name) and request.args.get(year) and request.args.get(country):
         sellers = find_sellers(request.args.get(commodity_name), request.args.get(country))
-        mkt_dict = map_mkt(rrequest.args.get(commodity_name), request.args.get(country))
+        mkt_dict = map_mkt(request.args.get(commodity_name), request.args.get(country))
     else:
         dashboard = Dashboard()
         sellers = dashboard.find_sellers(commodity_name, country)
