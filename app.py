@@ -85,12 +85,12 @@ def home(commodity_name, year, country):
 
     print(reduced_data)
     print("TH", dashboard.threshold_all(commodity_name, year, country))
-    # try:
-    #     html_content = "<html><body>{}</body></html>".format(reduced_data)
-    #     send_mail(catalog_managers, "Potential Price Gouging Alert", html_content)
-    # except Exception as e:
-    #     print("Email Alerts pertaining to price gouging has not been sent to catalog manager...")
-    #     print("Continuing to relay data...")
+    try:
+        html_content = "<html><body>{}</body></html>".format(reduced_data)
+        send_mail(catalog_managers, "Potential Price Gouging Alert", html_content)
+    except Exception as e:
+        print("Email Alerts pertaining to price gouging has not been sent to catalog manager...")
+        print("Continuing to relay data...")
     return cluster_obj_json
 
 
