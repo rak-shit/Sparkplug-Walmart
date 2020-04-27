@@ -6,6 +6,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.ensemble import IsolationForest
 
+import boto3
+
 pd.set_option("display.max_rows", None, "display.max_columns", None)
 
 
@@ -43,6 +45,9 @@ class Dashboard:
             i = i + 1
         
         return mkt_dict
+    
+    def pull_marketer_data_ses():
+        pass
 
     def threshold(self, commodity, year, country):
         data = self.data
@@ -86,6 +91,10 @@ class Dashboard:
 
 
     def cluster(self, mkt_dict, year, commodity, country):
+        """
+        returns (json_output containing raw_data, outliers & thresholds for a particular field), outlier list
+        
+        """
         data = self.data
         data = data[(data["cm_name"] == commodity) & (data["adm0_name"] == country)]
         df = data[['cm_name','mkt_name', 'mp_month', 'mp_price']]
@@ -110,16 +119,17 @@ class Dashboard:
         # plt.ylabel('CM price')
         # plt.title('Visualization of raw data')
         # plt.show()
-
-        x = {
+        print(isoF_outliers_values)
+        outliers_list = isoF_outliers_values.values.tolist()
+        dict_data = {
             "raw_data": new_data.values.tolist(),
-            "outliers": isoF_outliers_values.values.tolist(),
+            "outliers": outliers_list,
             "threshold_all": self.threshold_all(commodity, year, country)
         }
 
         # convert into JSON:
-        y = json.dumps(x)
-        return y
+        json_data = json.dumps(dict_data)
+        return json_data, outliers_list
 
 
 

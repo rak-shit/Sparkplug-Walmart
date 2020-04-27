@@ -5,10 +5,13 @@
 from flask import Flask, render_template, request, url_for, redirect, Response, jsonify
 # from flask.ext.sqlalchemy import SQLAlchemy
 import logging
+import json
 from logging import Formatter, FileHandler
 from forms import *
 import os
+import pandas as pd
 from sparkplug import Dashboard
+from send_email import send_mail
 
 #----------------------------------------------------------------------------#
 # App Config.
@@ -37,6 +40,7 @@ def login_required(test):
             return redirect(url_for('login'))
     return wrap
 '''
+catalog_managers = ["bim2016002@iiita.ac.in", "iit2016126@iiita.ac.in"]
 #----------------------------------------------------------------------------#
 # Controllers.
 #----------------------------------------------------------------------------#
@@ -63,52 +67,33 @@ def home(commodity_name, year, country):
     mkt_dict = dashboard.map_mkt(commodity_name, country)
     # thresh = threshold(commodity_name, year, country)
     cluster_obj = dashboard.cluster(mkt_dict, year, commodity_name, country)
-    return cluster_obj
 
-# @app.route('/about')
-# def about():
-#     return render_template('pages/placeholder.about.html')
+    cluster_obj_json = cluster_obj[0]
+    outliers_list = cluster_obj[1]
+    # emails sent asynchronously 
+    # cluster_dict = json.loads(outliers_list)
+    mkt_dict_reverse =  {_id: marketer for marketer, _id in mkt_dict.items()}
+    print(mkt_dict)
+    outlier_set = set()
+    for outlier in outliers_list:
+        seller_info = mkt_dict_reverse[outlier[0]]
+        outlier_set.add(seller_info)
+    outlier_list = list(outlier_set)
 
+    seller_histories = []
+    
+    # data reduced to commodity, year and country
+    reduced_data = dashboard.data[(dashboard.data["mkt_name"].isin(outlier_list)) & (dashboard.data["adm0_name"] == country) & (dashboard.data["mp_year"] == year)]
 
-# @app.route('/login')
-# def login():
-#     form = LoginForm(request.form)
-#     return render_template('forms/login.html', form=form)
+    print(reduced_data)
+    try:
+        html_content = "<html><body>{}</body></html>".format(reduced_data)
+        send_mail(catalog_managers, "Potential Price Gouging Alert", html_content)
+    except Exception as e:
+        print("Email Alerts pertaining to price gouging has not been sent to catalog manager...")
+        print("Continuing to relay data...")
+    return cluster_obj_json
 
-
-# @app.route('/register')
-# def register():
-#     form = RegisterForm(request.form)
-#     return render_template('forms/register.html', form=form)
-
-
-# @app.route('/forgot')
-# def forgot():
-#     form = ForgotForm(request.form)
-#     return render_template('forms/forgot.html', form=form)
-
-# # Error handlers.
-
-
-# @app.errorhandler(500)
-# def internal_error(error):
-#     #db_session.rollback()
-#     return render_template('errors/500.html'), 500
-
-
-# @app.errorhandler(404)
-# def not_found_error(error):
-#     return render_template('errors/404.html'), 404
-
-# if not app.debug:
-#     file_handler = FileHandler('error.log')
-#     file_handler.setFormatter(
-#         Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]')
-#     )
-#     app.logger.setLevel(logging.INFO)
-#     file_handler.setLevel(logging.INFO)
-#     app.logger.addHandler(file_handler)
-#     app.logger.info('errors')
 
 # #----------------------------------------------------------------------------#
 # # Launch.
