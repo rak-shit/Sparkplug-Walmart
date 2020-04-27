@@ -16,3 +16,6 @@ def send_mail(to_email, subject, html_content):
         response = sg.send(message)
     except Exception as e:
         print(e)
+
+def essential_items():
+    return ["Eggs", "Rice", "Rice (Local)", "Milk", "Wheat", "Bread"]

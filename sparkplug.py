@@ -5,7 +5,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.ensemble import IsolationForest
-
+from helpers import essential_items
 import boto3
 
 pd.set_option("display.max_rows", None, "display.max_columns", None)
@@ -57,7 +57,7 @@ class Dashboard:
 
     def threshold_all(self, commodity, year, country):
         data = self.data
-        all_commodity_data = data[(data["mp_year"]==year) & (data["adm0_name"] == country)]
+        all_commodity_data = data[(data["mp_year"]==year) & (data["cm_name"].isin(essential_items())) & (data["adm0_name"] == country)]
         all_commodities =  list(set(all_commodity_data['cm_name'].values.tolist()))
         # return all_commodities
         thresholds_dict_cm = dict()

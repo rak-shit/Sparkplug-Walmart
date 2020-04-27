@@ -11,7 +11,7 @@ from forms import *
 import os
 import pandas as pd
 from sparkplug import Dashboard
-from send_email import send_mail
+from helpers import send_mail, essential_items
 from flask_cors import CORS
 
 #----------------------------------------------------------------------------#
@@ -20,7 +20,6 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 app.config.from_object('config')
-#db = SQLAlchemy(app)
 CORS(app)
 
 # Automatically tear down SQLAlchemy.
@@ -87,6 +86,7 @@ def home(commodity_name, year, country):
     reduced_data = dashboard.data[(dashboard.data["mkt_name"].isin(outlier_list)) & (dashboard.data["adm0_name"] == country) & (dashboard.data["mp_year"] == year)]
 
     print(reduced_data)
+    print("TH", dashboard.threshold_all(commodity_name, year, country))
     try:
         html_content = "<html><body>{}</body></html>".format(reduced_data)
         send_mail(catalog_managers, "Potential Price Gouging Alert", html_content)
