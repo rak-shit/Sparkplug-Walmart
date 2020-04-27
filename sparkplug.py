@@ -71,7 +71,12 @@ class Dashboard:
             except statistics.StatisticsError:
                 threshold = 0
             thresholds_dict_cm[cm] = threshold
-        return thresholds_dict_cm
+
+        lst = []
+        for k, v in thresholds_dict_cm.items():
+            lst.append([k, v]) 
+
+        return lst
 
     def average_rate_change(self, commodity, country):
         data = self.data
