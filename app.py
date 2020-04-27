@@ -54,18 +54,17 @@ def index():
 
 @app.route('/monitor/<commodity_name>/<year>/<country>', methods=['POST', 'GET'])
 def home(commodity_name, year, country):
-    if 'commodity_name' in request.form.keys() and 'year' in request.form.keys() and 'country' and request.form.keys():
+    year = int(year)
+    if 'commodity_name' in request.form.keys() and \
+        'year' in request.form.keys() and 'country' \
+        and request.form.keys() and request.method == 'POST':
         sellers = find_sellers(request.form['commodity_name'], request.form['country'])
         mkt_dict = map_mkt(request.form['commodity_name'], request.form['country'])
-        # thresh = threshold(commodity_name, year, country)
-        cluster_obj = cluster(mkt_dict, request.form['year'], request.form['commodity_name'], request.form['country'])
-        return cluster_obj
-    
-    year = int(year)
-    dashboard = Dashboard()
-    sellers = dashboard.find_sellers(commodity_name, country)
-    mkt_dict = dashboard.map_mkt(commodity_name, country)
-    # thresh = threshold(commodity_name, year, country)
+    else:
+        dashboard = Dashboard()
+        sellers = dashboard.find_sellers(commodity_name, country)
+        mkt_dict = dashboard.map_mkt(commodity_name, country)
+
     cluster_obj = dashboard.cluster(mkt_dict, year, commodity_name, country)
 
     cluster_obj_json = cluster_obj[0]
