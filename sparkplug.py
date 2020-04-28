@@ -121,6 +121,12 @@ class Dashboard:
         # plt.show()
         print(isoF_outliers_values)
         outliers_list = isoF_outliers_values.values.tolist()
+        
+        mkt_dict_reverse = {_id: marketer for marketer, _id in self.map_mkt(self.commodity, self.country).items()}
+        for outlier in outliers_list:
+            merchant_name = mkt_dict_reverse[outlier[0]]
+            outlier.append(merchant_name)
+
         dict_data = {
             "raw_data": new_data.values.tolist(),
             "outliers": outliers_list,
