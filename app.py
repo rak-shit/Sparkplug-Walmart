@@ -75,8 +75,11 @@ def home(commodity_name, year, country):
     print(mkt_dict)
     outlier_set = set()
     for outlier in outliers_list:
-        seller_info = mkt_dict_reverse[outlier[0]]
-        outlier_set.add(seller_info)
+        try:
+            seller_info = mkt_dict_reverse[outlier[0]]
+            outlier_set.add(seller_info)
+        except Exception as e:
+            print(e)
     outlier_list = list(outlier_set)
 
     seller_histories = []
@@ -99,16 +102,16 @@ def home(commodity_name, year, country):
     #     )
 
     # Blocking task of emails(takes a lot of time, laid off asynchronously above)
-    try:
-        outlier_lists = reduced_data[["adm1_id","cm_name","mp_price","mp_month","mp_year"]].values.tolist()
-        outlier_lists = [["Seller/Marketer ID","Commodity Name","Selling Price","Month","Year"]] + outlier_lists
-        html_content = HTML.table(outlier_lists)
-        html_content = "<html><h1>Price Gouging Sellers & Historical Data</h1><body>{}</body></html>".format(html_content)
-        send_mail(catalog_managers, "Potential Price Gouging Alert", html_content)
-    except Exception as e:
-        print(str(e))
-        print("Email Alerts pertaining to price gouging has not been sent to catalog manager...")
-        print("Continuing to relay data...")
+    # try:
+    #     outlier_lists = reduced_data[["adm1_id","cm_name","mp_price","mp_month","mp_year"]].values.tolist()
+    #     outlier_lists = [["Seller/Marketer ID","Commodity Name","Selling Price","Month","Year"]] + outlier_lists
+    #     html_content = HTML.table(outlier_lists)
+    #     html_content = "<html><h1>Price Gouging Sellers & Historical Data</h1><body>{}</body></html>".format(html_content)
+    #     send_mail(catalog_managers, "Potential Price Gouging Alert", html_content)
+    # except Exception as e:
+    #     print(str(e))
+    #     print("Email Alerts pertaining to price gouging has not been sent to catalog manager...")
+    #     print("Continuing to relay data...")
 
     return cluster_obj_json
 
