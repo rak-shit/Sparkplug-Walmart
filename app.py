@@ -60,7 +60,7 @@ def home(commodity_name, year, country):
         sellers = find_sellers(request.args.get(commodity_name), request.args.get(country))
         mkt_dict = map_mkt(request.args.get(commodity_name), request.args.get(country))
     else:
-        dashboard = Dashboard()
+        dashboard = Dashboard(commodity_name, country, year)
         sellers = dashboard.find_sellers(commodity_name, country)
         mkt_dict = dashboard.map_mkt(commodity_name, country)
 
@@ -68,8 +68,7 @@ def home(commodity_name, year, country):
 
     cluster_obj_json = cluster_obj[0]
     outliers_list = cluster_obj[1]
-    # emails sent asynchronously 
-    # cluster_dict = json.loads(outliers_list)
+
     mkt_dict_reverse =  {_id: marketer for marketer, _id in mkt_dict.items()}
     print(mkt_dict)
     outlier_set = set()
@@ -85,12 +84,14 @@ def home(commodity_name, year, country):
 
     print(reduced_data)
     print("TH", dashboard.threshold_all(commodity_name, year, country))
-    try:
-        html_content = "<html><body>{}</body></html>".format(reduced_data)
-        send_mail(catalog_managers, "Potential Price Gouging Alert", html_content)
-    except Exception as e:
-        print("Email Alerts pertaining to price gouging has not been sent to catalog manager...")
-        print("Continuing to relay data...")
+
+    # try:
+    #     html_content = "<html><body>{}</body></html>".format(reduced_data)
+    #     send_mail(catalog_managers, "Potential Price Gouging Alert", html_content)
+    # except Exception as e:
+    #     print("Email Alerts pertaining to price gouging has not been sent to catalog manager...")
+    #     print("Continuing to relay data...")
+
     return cluster_obj_json
 
 

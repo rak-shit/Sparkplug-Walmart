@@ -12,14 +12,17 @@ pd.set_option("display.max_rows", None, "display.max_columns", None)
 
 
 class Dashboard:
-    def __init__(self):
-        self.data = pd.read_csv("data.csv", encoding = "ISO-8859-1")
+    def __init__(self, commodity, country, year):
+        data = pd.read_csv("data.csv", encoding = "ISO-8859-1")
+        self.commodity = commodity
+        self.country = country
+        self.year = year
+        self.raw_data = data
+        self.data = data[(data["cm_name"] == commodity) & (data["adm0_name"] == country) & (data["mp_year"] == year)] 
 
     def find_sellers(self, commodity, country):
         # data = pd.read_csv("data.csv", encoding = "ISO-8859-1")
-        data = self.data
-        data = data[(data["cm_name"] == commodity) & (data["adm0_name"] == country)]
-        data_reduced= data[['cm_name','mkt_name', 'mp_month', 'mp_price']]
+        data_reduced= self.data[['cm_name','mkt_name', 'mp_month', 'mp_price']]
         items = ['Bread','Wheat','Rice']
         item_sellers = dict()
         i = 0
@@ -33,9 +36,7 @@ class Dashboard:
         return item_sellers
 
     def map_mkt(self, commodity_name, country):
-        data = self.data
-        data = data[(data["cm_name"] == commodity_name) & (data["adm0_name"] == country)]
-        data = data[['mkt_name']]
+        data = self.data[['mkt_name']]
         data = data.drop_duplicates()
         col_mkt_list = data['mkt_name'].tolist()
         mkt_dict = {}
@@ -50,14 +51,12 @@ class Dashboard:
         pass
 
     def threshold(self, commodity, year, country):
-        data = self.data
-        data = data[(data["cm_name"] == commodity) & (data["mp_year"]==year) & (data["adm0_name"] == country)]
-        df = data[['mp_price']]
+        df = self.data[['mp_price']]
         return statistics.median(df['mp_price'].values.tolist()) + 5
 
     def threshold_all(self, commodity, year, country):
         data = self.data
-        all_commodity_data = data[(data["mp_year"]==year) & (data["cm_name"].isin(essential_items())) & (data["adm0_name"] == country)]
+        all_commodity_data = self.raw_data[(self.raw_data["mp_year"]==year) & (self.raw_data["cm_name"].isin(essential_items())) & (self.raw_data["adm0_name"] == country)]
         all_commodities =  list(set(all_commodity_data['cm_name'].values.tolist()))
         # return all_commodities
         thresholds_dict_cm = dict()
@@ -79,9 +78,7 @@ class Dashboard:
         return lst
 
     def average_rate_change(self, commodity, country):
-        data = self.data
-        data = data[(data["cm_name"] == commodity) & (data["adm0_name"] == country)]
-        df = data[['cm_name','mkt_name', 'mp_month', 'mp_price']]
+        df = self.data[['cm_name','mkt_name', 'mp_month', 'mp_price']]
         prices_list =  df['mp_price'].values.tolist()
         avg_rate_increase = 0
         length = len(prices_list)
@@ -100,9 +97,7 @@ class Dashboard:
         returns (json_output containing raw_data, outliers & thresholds for a particular field), outlier list
         
         """
-        data = self.data
-        data = data[(data["cm_name"] == commodity) & (data["adm0_name"] == country)]
-        df = data[['cm_name','mkt_name', 'mp_month', 'mp_price']]
+        df = self.data[['cm_name','mkt_name', 'mp_month', 'mp_price']]
         # print(data_reduced)
         # print(df)
 
@@ -117,7 +112,7 @@ class Dashboard:
         isoF_outliers_values = new_data[iso_forest.predict(new_data) == -1]
         # print(isoF_outliers_values)
 
-        isoF_outliers_values = isoF_outliers_values[(data["mp_price"] > self.threshold(commodity, year, country))]
+        isoF_outliers_values = isoF_outliers_values[(isoF_outliers_values["mp_price"] > self.threshold(commodity, year, country))]
 
         # plt.scatter(isoF_outliers_values.iloc[:, 0], isoF_outliers_values.iloc[:, 1].values.astype(int))
         # plt.xlabel('MKT')
