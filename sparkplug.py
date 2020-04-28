@@ -73,7 +73,7 @@ class Dashboard:
 
         lst = []
         for k, v in thresholds_dict_cm.items():
-            lst.append([k, v]) 
+            lst.append([k, v])
 
         return lst
 
@@ -89,16 +89,17 @@ class Dashboard:
         return avg_rate_increase/(length-1)
 
 
-
-
-
     def cluster(self, mkt_dict, year, commodity, country):
         """
-        returns (json_output containing raw_data, outliers & thresholds for a particular field), outlier list
-        
+        Args:
+        mkt_dict(dict) : Seller/Marketer to ID mappings
+        year(int) : Year to check
+        commodity(str) : 
+        country(str) : 
+        Returns:
+        (json_output containing raw_data, outliers & thresholds for a particular field), outlier list
         """
         df = self.data[['cm_name','mkt_name', 'mp_month', 'mp_price', 'mkt_id']]
-        # print(data_reduced)
         print("email test", df.values.tolist())
 
         for x in df.index:
@@ -111,7 +112,6 @@ class Dashboard:
         iso_forest = iso_forest.fit(out_data)
         isof_outliers = iso_forest.predict(out_data)
         isoF_outliers_values = out_data[iso_forest.predict(out_data) == -1]
-        # print(isoF_outliers_values)
 
         isoF_outliers_values = isoF_outliers_values[(isoF_outliers_values["mp_price"] > self.threshold(commodity, year, country))]
 
@@ -127,7 +127,8 @@ class Dashboard:
         dict_data = {
             "raw_data": new_data.values.tolist(),
             "outliers": outliers_list,
-            "threshold_all": self.threshold_all(commodity, year, country)
+            "threshold_all": self.threshold_all(commodity, year, country),
+            "average_rate_change": self.average_rate_change(commodity, country)
         }
 
         # convert into JSON:
