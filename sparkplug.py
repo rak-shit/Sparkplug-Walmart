@@ -97,19 +97,24 @@ class Dashboard:
         returns (json_output containing raw_data, outliers & thresholds for a particular field), outlier list
         
         """
+<<<<<<< HEAD
         df = self.data[['cm_name','mkt_name', 'mp_month', 'mp_price', 'adm1_id']]
+=======
+        df = self.data[['cm_name','mkt_name', 'mp_month', 'mp_price', 'mkt_id']]
+>>>>>>> 4f5628a2f771bfb24cff16815a62098d11ed16ee
         # print(data_reduced)
         print("email test", df.values.tolist())
 
         for x in df.index:
             df.at[x, 'mkt_name'] = mkt_dict[df.at[x, 'mkt_name']]  
 
-        new_data = df[['adm1_id', 'mkt_name', 'mp_price']]
+        new_data = df[['mkt_name', 'mp_price']]
+        out_data = df[['mkt_name', 'mp_price', 'mkt_id']]
 
         iso_forest = IsolationForest(n_estimators=300, contamination=0.10)
-        iso_forest = iso_forest.fit(new_data)
-        isof_outliers = iso_forest.predict(new_data)
-        isoF_outliers_values = new_data[iso_forest.predict(new_data) == -1]
+        iso_forest = iso_forest.fit(out_data)
+        isof_outliers = iso_forest.predict(out_data)
+        isoF_outliers_values = out_data[iso_forest.predict(out_data) == -1]
         # print(isoF_outliers_values)
 
         isoF_outliers_values = isoF_outliers_values[(isoF_outliers_values["mp_price"] > self.threshold(commodity, year, country))]
