@@ -13,7 +13,7 @@ import pandas as pd
 from sparkplug import Dashboard
 from helpers import send_mail, essential_items
 from flask_cors import CORS
-
+import boto3
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -22,6 +22,7 @@ app = Flask(__name__)
 app.config.from_object('config')
 CORS(app)
 
+client = boto3.client('lambda')
 # Automatically tear down SQLAlchemy.
 '''
 @app.teardown_request
@@ -85,6 +86,18 @@ def home(commodity_name, year, country):
     print(reduced_data)
     print("TH", dashboard.threshold_all(commodity_name, year, country))
 
+    # send emails asynchronously, AWS Lambda
+    # for manager in catalog_managers:
+    #     html_content = "<html><body>{}</body></html>".format(reduced_data)
+    #     params = {'to_email': manager, 'subject':"Potential Price Gouging Alert",
+    #               'html_content': html_content}
+    #     response = client.invoke(
+    #         FunctionName='lambda-sparkplug',
+    #         InvocationType='Event',
+    #         Payload=params
+    #     )
+
+    # Blocking task of emails(takes a lot of time, laid off asynchronously above)
     # try:
     #     html_content = "<html><body>{}</body></html>".format(reduced_data)
     #     send_mail(catalog_managers, "Potential Price Gouging Alert", html_content)
