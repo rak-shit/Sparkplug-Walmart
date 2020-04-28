@@ -23,7 +23,7 @@ app = Flask(__name__)
 app.config.from_object('config')
 CORS(app)
 
-client = boto3.client('lambda')
+# client = boto3.client('lambda')
 # Automatically tear down SQLAlchemy.
 '''
 @app.teardown_request
