@@ -97,11 +97,7 @@ class Dashboard:
         returns (json_output containing raw_data, outliers & thresholds for a particular field), outlier list
         
         """
-<<<<<<< HEAD
-        df = self.data[['cm_name','mkt_name', 'mp_month', 'mp_price', 'adm1_id']]
-=======
         df = self.data[['cm_name','mkt_name', 'mp_month', 'mp_price', 'mkt_id']]
->>>>>>> 4f5628a2f771bfb24cff16815a62098d11ed16ee
         # print(data_reduced)
         print("email test", df.values.tolist())
 
