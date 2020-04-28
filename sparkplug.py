@@ -99,7 +99,7 @@ class Dashboard:
         """
         df = self.data[['cm_name','mkt_name', 'mp_month', 'mp_price']]
         # print(data_reduced)
-        # print(df)
+        print("email test", df.values.tolist())
 
         for x in df.index:
             df.at[x, 'mkt_name'] = mkt_dict[df.at[x, 'mkt_name']]  

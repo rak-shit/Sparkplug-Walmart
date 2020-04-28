@@ -4,6 +4,7 @@
 
 from flask import Flask, render_template, request, url_for, redirect, Response, jsonify
 # from flask.ext.sqlalchemy import SQLAlchemy
+from htmllib import HTML
 import logging
 import json
 from logging import Formatter, FileHandler
@@ -42,7 +43,7 @@ def login_required(test):
             return redirect(url_for('login'))
     return wrap
 '''
-catalog_managers = ["bim2016002@iiita.ac.in", "iit2016126@iiita.ac.in"]
+catalog_managers = ["bim2016002@iiita.ac.in"]
 #----------------------------------------------------------------------------#
 # Controllers.
 #----------------------------------------------------------------------------#
@@ -98,12 +99,16 @@ def home(commodity_name, year, country):
     #     )
 
     # Blocking task of emails(takes a lot of time, laid off asynchronously above)
-    # try:
-    #     html_content = "<html><body>{}</body></html>".format(reduced_data)
-    #     send_mail(catalog_managers, "Potential Price Gouging Alert", html_content)
-    # except Exception as e:
-    #     print("Email Alerts pertaining to price gouging has not been sent to catalog manager...")
-    #     print("Continuing to relay data...")
+    try:
+        outlier_lists = reduced_data[["adm1_id","cm_name","mp_price","mp_month","mp_year"]].values.tolist()
+        outlier_lists = [["Seller/Marketer ID","Commodity Name","Selling Price","Month","Year"]] + outlier_lists
+        html_content = HTML.table(outlier_lists)
+        html_content = "<html><h1>Price Gouging Sellers & Historical Data</h1><body>{}</body></html>".format(html_content)
+        send_mail(catalog_managers, "Potential Price Gouging Alert", html_content)
+    except Exception as e:
+        print(str(e))
+        print("Email Alerts pertaining to price gouging has not been sent to catalog manager...")
+        print("Continuing to relay data...")
 
     return cluster_obj_json
 
@@ -114,7 +119,7 @@ def home(commodity_name, year, country):
 
 # Default port:
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
 
 # # Or specify port manually:
 # '''
