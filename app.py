@@ -23,7 +23,7 @@ app = Flask(__name__)
 app.config.from_object('config')
 CORS(app)
 
-# client = boto3.client('lambda')
+client = boto3.client('lambda')
 # Automatically tear down SQLAlchemy.
 '''
 @app.teardown_request
@@ -91,29 +91,34 @@ def home(commodity_name, year, country):
     print("TH", dashboard.threshold_all(commodity_name, year, country))
 
     # send emails asynchronously, AWS Lambda
-    # for manager in catalog_managers:
-    #     html_content = "<html><body>{}</body></html>".format(reduced_data)
-    #     params = {'to_email': manager, 'subject':"Potential Price Gouging Alert",
-    #               'html_content': html_content}
-    #     response = client.invoke(
-    #         FunctionName='lambda-sparkplug',
-    #         InvocationType='Event',
-    #         Payload=params
-    #     )
+    for manager in catalog_managers:
+        outlier_lists = reduced_data[["adm1_id","cm_name","mp_price","mp_month","mp_year"]].values.tolist()
+        outlier_lists = [["Seller/Marketer ID","Commodity Name","Selling Price","Month","Year"]] + outlier_lists
+        html_content = HTML.table(outlier_lists)
+        html_content = "<html><h1>Price Gouging Sellers & Historical Data</h1><body>{}</body></html>".format(html_content)
+        payload = {'to_email': manager, 'subject':"Potential Price Gouging Alert",
+                  'html_content': html_content}
+        response = client.invoke(
+            FunctionName='lambda-sparkplug',
+            InvocationType='Event',
+            Payload=json.dumps(payload)
+        )
+    return cluster_obj_json
+
 
     # Blocking task of emails(takes a lot of time, laid off asynchronously above)
     # try:
-    #     outlier_lists = reduced_data[["adm1_id","cm_name","mp_price","mp_month","mp_year"]].values.tolist()
-    #     outlier_lists = [["Seller/Marketer ID","Commodity Name","Selling Price","Month","Year"]] + outlier_lists
-    #     html_content = HTML.table(outlier_lists)
-    #     html_content = "<html><h1>Price Gouging Sellers & Historical Data</h1><body>{}</body></html>".format(html_content)
-    #     send_mail(catalog_managers, "Potential Price Gouging Alert", html_content)
+        # outlier_lists = reduced_data[["adm1_id","cm_name","mp_price","mp_month","mp_year"]].values.tolist()
+        # outlier_lists = [["Seller/Marketer ID","Commodity Name","Selling Price","Month","Year"]] + outlier_lists
+        # html_content = HTML.table(outlier_lists)
+        # html_content = "<html><h1>Price Gouging Sellers & Historical Data</h1><body>{}</body></html>".format(html_content)
+        # send_mail(catalog_managers, "Potential Price Gouging Alert", html_content)
     # except Exception as e:
     #     print(str(e))
     #     print("Email Alerts pertaining to price gouging has not been sent to catalog manager...")
     #     print("Continuing to relay data...")
 
-    return cluster_obj_json
+    # return cluster_obj_json
 
 
 # #----------------------------------------------------------------------------#
