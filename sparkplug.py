@@ -20,6 +20,10 @@ class Dashboard:
         self.raw_data = data
         self.data = data[(data["cm_name"] == commodity) & (data["adm0_name"] == country) & (data["mp_year"] == year)] 
 
+    def get_commodities(self):
+        return list(set(self.raw_data['cm_name'].tolist())), \
+               list(set(self.raw_data['adm0_name'].tolist())), list(set(self.raw_data['mp_year'].tolist()))
+
     def find_sellers(self, commodity, country):
         # data = pd.read_csv("data.csv", encoding = "ISO-8859-1")
         data_reduced= self.data[['cm_name','mkt_name', 'mp_month', 'mp_price']]
@@ -89,7 +93,7 @@ class Dashboard:
         return avg_rate_increase/(length-1)
 
 
-    def cluster(self, mkt_dict, year, commodity, country):
+    def anomaly_detection(self, mkt_dict, year, commodity, country):
         """
         Args:
         mkt_dict(dict) : Seller/Marketer to ID mappings
@@ -128,7 +132,8 @@ class Dashboard:
             "raw_data": new_data.values.tolist(),
             "outliers": outliers_list,
             "threshold_all": self.threshold_all(commodity, year, country),
-            "average_rate_change": self.average_rate_change(commodity, country)
+            "average_rate_change": self.average_rate_change(commodity, country),
+            "list_all": self.get_commodities()
         }
 
         # convert into JSON:

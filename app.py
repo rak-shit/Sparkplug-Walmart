@@ -66,10 +66,10 @@ def home(commodity_name, year, country):
         sellers = dashboard.find_sellers(commodity_name, country)
         mkt_dict = dashboard.map_mkt(commodity_name, country)
 
-    cluster_obj = dashboard.cluster(mkt_dict, year, commodity_name, country)
+    anomaly_obj = dashboard.anomaly_detection(mkt_dict, year, commodity_name, country)
 
-    cluster_obj_json = cluster_obj[0]
-    outliers_list = cluster_obj[1]
+    anomaly_obj_json = anomaly_obj[0]
+    outliers_list = anomaly_obj[1]
 
     mkt_dict_reverse =  {_id: marketer for marketer, _id in mkt_dict.items()}
     print(mkt_dict)
@@ -103,7 +103,7 @@ def home(commodity_name, year, country):
             InvocationType='Event',
             Payload=json.dumps(payload)
         )
-    return cluster_obj_json
+    return anomaly_obj_json
 
 
     # Blocking task of emails(takes a lot of time, laid off asynchronously above)
@@ -118,7 +118,7 @@ def home(commodity_name, year, country):
     #     print("Email Alerts pertaining to price gouging has not been sent to catalog manager...")
     #     print("Continuing to relay data...")
 
-    # return cluster_obj_json
+    # return anomaly_obj_json
 
 
 # #----------------------------------------------------------------------------#
