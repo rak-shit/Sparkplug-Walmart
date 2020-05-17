@@ -108,11 +108,11 @@ def home(commodity_name, year, country):
         html_content = "<html><h1>Price Gouging Sellers & Historical Data</h1><body>{}</body></html>".format(html_content)
         payload = {'to_email': manager, 'subject':"Potential Price Gouging Alert",
                   'html_content': html_content}
-        # response = client.invoke(
-        #     FunctionName='lambda-sparkplug',
-        #     InvocationType='Event',
-        #     Payload=json.dumps(payload)
-        # )
+        response = client.invoke(
+            FunctionName='lambda-sparkplug',
+            InvocationType='Event',
+            Payload=json.dumps(payload)
+        )
     return anomaly_obj_json
 
 
