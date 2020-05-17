@@ -26,31 +26,36 @@ class Dashboard:
 
     def find_sellers(self, commodity, country):
         # data = pd.read_csv("data.csv", encoding = "ISO-8859-1")
-        data_reduced= self.data[['cm_name','mkt_name', 'mp_month', 'mp_price']]
-        items = ['Bread','Wheat','Rice']
-        item_sellers = dict()
-        i = 0
-        for item in items:
-            for i in range(len(data_reduced)):
-                if data_reduced.iloc[i]['cm_name'] == item:
-                    if item not in list(item_sellers.keys()):
-                        item_sellers[item] = [data_reduced.iloc[i]['mkt_name']]
+        print(self.data.empty)
+        if not self.data.empty:
+            data_reduced = self.data[['cm_name','mkt_name', 'mp_month', 'mp_price']]
+            items = ['Bread','Wheat','Rice']
+            item_sellers = dict()
+            i = 0
+            for item in items:
+                for i in range(len(data_reduced)):
+                    if data_reduced.iloc[i]['cm_name'] == item:
+                        if item not in list(item_sellers.keys()):
+                            item_sellers[item] = [data_reduced.iloc[i]['mkt_name']]
 
-        print(item_sellers)
-        return item_sellers
-
+            print(item_sellers)
+            return item_sellers
+        else:
+            return None
     def map_mkt(self, commodity_name, country):
-        data = self.data[['mkt_name']]
-        data = data.drop_duplicates()
-        col_mkt_list = data['mkt_name'].tolist()
-        mkt_dict = {}
-        i = 0
-        for x in col_mkt_list:
-            mkt_dict[x] = i
-            i = i + 1
-        
-        return mkt_dict
-    
+        if not self.data.empty:
+            data = self.data[['mkt_name']]
+            data = data.drop_duplicates()
+            col_mkt_list = data['mkt_name'].tolist()
+            mkt_dict = {}
+            i = 0
+            for x in col_mkt_list:
+                mkt_dict[x] = i
+                i = i + 1
+            
+            return mkt_dict
+        else:
+            return None
     def pull_marketer_data_ses():
         pass
 
@@ -103,42 +108,50 @@ class Dashboard:
         Returns:
         (json_output containing raw_data, outliers & thresholds for a particular field), outlier list
         """
-        df = self.data[['cm_name','mkt_name', 'mp_month', 'mp_price', 'mkt_id']]
-        print("email test", df.values.tolist())
+        if not self.data.empty:
+            df = self.data[['cm_name','mkt_name', 'mp_month', 'mp_price', 'mkt_id']]
+            print("email test", df.values.tolist())
 
-        for x in df.index:
-            df.at[x, 'mkt_name'] = mkt_dict[df.at[x, 'mkt_name']]  
+            for x in df.index:
+                df.at[x, 'mkt_name'] = mkt_dict[df.at[x, 'mkt_name']]  
 
-        new_data = df[['mkt_name', 'mp_price']]
-        out_data = df[['mkt_name', 'mp_price', 'mkt_id']]
+            new_data = df[['mkt_name', 'mp_price']]
+            out_data = df[['mkt_name', 'mp_price', 'mkt_id']]
+            iso_forest = IsolationForest(n_estimators=300, contamination=0.10)
+            iso_forest = iso_forest.fit(out_data)
+            isof_outliers = iso_forest.predict(out_data)
+            isoF_outliers_values = out_data[iso_forest.predict(out_data) == -1]
 
-        iso_forest = IsolationForest(n_estimators=300, contamination=0.10)
-        iso_forest = iso_forest.fit(out_data)
-        isof_outliers = iso_forest.predict(out_data)
-        isoF_outliers_values = out_data[iso_forest.predict(out_data) == -1]
+            isoF_outliers_values = isoF_outliers_values[(isoF_outliers_values["mp_price"] > self.threshold(commodity, year, country))]
 
-        isoF_outliers_values = isoF_outliers_values[(isoF_outliers_values["mp_price"] > self.threshold(commodity, year, country))]
-
-        # plt.scatter(isoF_outliers_values.iloc[:, 0], isoF_outliers_values.iloc[:, 1].values.astype(int))
-        # plt.xlabel('MKT')
-        # plt.ylabel('CM price')
-        # plt.title('Visualization of raw data')
-        # plt.show()
-        print(isoF_outliers_values)
-        outliers_list = isoF_outliers_values.values.tolist()
+            # plt.scatter(isoF_outliers_values.iloc[:, 0], isoF_outliers_values.iloc[:, 1].values.astype(int))
+            # plt.xlabel('MKT')
+            # plt.ylabel('CM price')
+            # plt.title('Visualization of raw data')
+            # plt.show()
+            print(isoF_outliers_values)
+            outliers_list = isoF_outliers_values.values.tolist()
 
 
-        dict_data = {
-            "raw_data": new_data.values.tolist(),
-            "outliers": outliers_list,
-            "threshold_all": self.threshold_all(commodity, year, country),
-            "average_rate_change": self.average_rate_change(commodity, country),
-            "list_all": self.get_commodities()
-        }
+            dict_data = {
+                "raw_data": new_data.values.tolist(),
+                "outliers": outliers_list,
+                "threshold_all": self.threshold_all(commodity, year, country),
+                "average_rate_change": self.average_rate_change(commodity, country),
+                "list_all": self.get_commodities()
+            }
 
-        # convert into JSON:
-        json_data = json.dumps(dict_data)
-        return json_data, outliers_list
+            # convert into JSON:
+            json_data = json.dumps(dict_data)
+            return json_data, outliers_list
+        else:
+            dict_data = {
+                "errorInput": "No valid data present"
+            }
+            json_data = json.dumps(dict_data)
+            outliers_list = []
+            return json_data, outliers_list
+
 
 
 
