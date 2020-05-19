@@ -28,18 +28,22 @@ class Dashboard:
 
     def find_sellers(self, commodity, country):
         # data = pd.read_csv("data.csv", encoding = "ISO-8859-1")
-        data_reduced = self.data[['cm_name','mkt_name', 'mp_month', 'mp_price']]
-        items = ['Bread','Wheat','Rice']
-        item_sellers = dict()
-        i = 0
-        for item in items:
-            for i in range(len(data_reduced)):
-                if data_reduced.iloc[i]['cm_name'] == item:
-                    if item not in list(item_sellers.keys()):
-                        item_sellers[item] = [data_reduced.iloc[i]['mkt_name']]
+        print(self.data.empty)
+        if not self.data.empty:
+            data_reduced = self.data[['cm_name','mkt_name', 'mp_month', 'mp_price']]
+            items = ['Bread','Wheat','Rice']
+            item_sellers = dict()
+            i = 0
+            for item in items:
+                for i in range(len(data_reduced)):
+                    if data_reduced.iloc[i]['cm_name'] == item:
+                        if item not in list(item_sellers.keys()):
+                            item_sellers[item] = [data_reduced.iloc[i]['mkt_name']]
 
-        print(item_sellers)
-        return item_sellers
+            print(item_sellers)
+            return item_sellers
+        else:
+            return None
 
     def map_mkt(self, commodity_name, country):
         data = self.data[['mkt_name']]
