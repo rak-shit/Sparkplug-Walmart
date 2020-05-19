@@ -25,6 +25,7 @@ class Dashboard:
     #     return list(set(self.raw_data['cm_name'].tolist())), \
     #            list(set(self.raw_data['adm0_name'].tolist())), list(set(self.raw_data['mp_year'].tolist()))
 
+
     def find_sellers(self, commodity, country):
         # data = pd.read_csv("data.csv", encoding = "ISO-8859-1")
         data_reduced = self.data[['cm_name','mkt_name', 'mp_month', 'mp_price']]

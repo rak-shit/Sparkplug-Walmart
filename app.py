@@ -50,8 +50,8 @@ catalog_managers = ["bim2016002@iiita.ac.in", "iit2016126@iiita.ac.in", "iit2016
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
-    commodity_name = 'Wheat'
-    year = 2013
+    commodity_name = 'Sugar'
+    year = 2017
     country = 'India'
     return redirect(url_for('home',commodity_name=commodity_name, year=year, country=country))
 
@@ -68,13 +68,13 @@ def home(commodity_name, year, country):
         pmkt_dict = dashboard.pmap_mkt(commodity_name, country)
 
     # value error cases
-    # if sellers is None:
-    #     dict_data = {
-    #         "errorInput": "No valid data present"
-    #     }
-    #     json_data = json.dumps(dict_data)
-    #     outliers_list = []
-    #     return json_data, outliers_list
+    if sellers is None:
+        dict_data = {
+            "errorInput": "No valid data present"
+        }
+        json_data = json.dumps(dict_data)
+        outliers_list = []
+        return json_data, outliers_list
 
     anomaly_obj = dashboard.anomaly_detection(mkt_dict, year, commodity_name, country, pmkt_dict)
 
