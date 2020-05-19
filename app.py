@@ -43,7 +43,7 @@ def login_required(test):
             return redirect(url_for('login'))
     return wrap
 '''
-catalog_managers = ["bim2016002@iiita.ac.in"]
+catalog_managers = ["bim2016002@iiita.ac.in", "iit2016126@iiita.ac.in", "iit2016123@iiita.ac.in"]
 #----------------------------------------------------------------------------#
 # Controllers.
 #----------------------------------------------------------------------------#
@@ -65,6 +65,7 @@ def home(commodity_name, year, country):
         dashboard = Dashboard(commodity_name, country, year)
         sellers = dashboard.find_sellers(commodity_name, country)
         mkt_dict = dashboard.map_mkt(commodity_name, country)
+        pmkt_dict = dashboard.pmap_mkt(commodity_name, country)
 
     # value error cases
     # if sellers is None:
@@ -75,7 +76,7 @@ def home(commodity_name, year, country):
     #     outliers_list = []
     #     return json_data, outliers_list
 
-    anomaly_obj = dashboard.anomaly_detection(mkt_dict, year, commodity_name, country)
+    anomaly_obj = dashboard.anomaly_detection(mkt_dict, year, commodity_name, country, pmkt_dict)
 
     anomaly_obj_json = anomaly_obj[0]
     outliers_list = anomaly_obj[1]

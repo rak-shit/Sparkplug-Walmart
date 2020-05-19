@@ -18,6 +18,7 @@ class Dashboard:
         self.country = country
         self.year = year
         self.raw_data = data
+        self.past_data = data[(data["cm_name"] == commodity) & (data["adm0_name"] == country) & (data["mp_year"] == self.year-1)]
         self.data = data[(data["cm_name"] == commodity) & (data["adm0_name"] == country) & (data["mp_year"] == year)] 
 
     # def get_commodities(self):
@@ -51,11 +52,23 @@ class Dashboard:
         
         return mkt_dict
 
+    def pmap_mkt(self, commodity_name, country):
+        data = self.past_data[['mkt_name']]
+        data = data.drop_duplicates()
+        col_mkt_list = data['mkt_name'].tolist()
+        mkt_dict = {}
+        i = 0
+        for x in col_mkt_list:
+            mkt_dict[x] = i
+            i = i + 1
+        
+        return mkt_dict
+
     def pull_marketer_data_ses():
         pass
 
     def threshold(self, commodity, year, country):
-        df = self.data[(self.data["mp_year"]==2013)]
+        df = self.past_data[['mp_price']]
         return statistics.median(df['mp_price'].values.tolist()) + 5
 
     def threshold_all(self, commodity, year, country):
@@ -93,7 +106,7 @@ class Dashboard:
         return avg_rate_increase/(length-1)
 
 
-    def anomaly_detection(self, mkt_dict, year, commodity, country):
+    def anomaly_detection(self, mkt_dict, year, commodity, country, pmkt_dict):
         """
         Args:
         mkt_dict(dict) : Seller/Marketer to ID mappings
@@ -110,6 +123,14 @@ class Dashboard:
         for x in df.index:
             df.at[x, 'mkt_name'] = mkt_dict[df.at[x, 'mkt_name']]  
 
+        past_df = self.past_data[['mkt_name', 'mp_price']]
+
+        for x in past_df.index:
+            past_df.at[x, 'mkt_name'] = pmkt_dict[past_df.at[x, 'mkt_name']] 
+
+        past_data = past_df[['mkt_name', 'mp_price']]
+
+
         new_data = df[['mkt_name', 'mp_price']]
         out_data = df[['mkt_name', 'mp_price', 'mkt_id']]
         iso_forest = IsolationForest(n_estimators=300, contamination=0.10)
@@ -118,6 +139,9 @@ class Dashboard:
         isoF_outliers_values = out_data[iso_forest.predict(out_data) == -1]
 
         isoF_outliers_values = isoF_outliers_values[(isoF_outliers_values["mp_price"] > self.threshold(commodity, year, country))]
+        leftOver = out_data[(out_data["mp_price"] > self.threshold(commodity, year, country))]
+
+        finalScamsters = leftOver.append(isoF_outliers_values, ignore_index=True)
 
         # plt.scatter(isoF_outliers_values.iloc[:, 0], isoF_outliers_values.iloc[:, 1].values.astype(int))
         # plt.xlabel('MKT')
@@ -125,11 +149,11 @@ class Dashboard:
         # plt.title('Visualization of raw data')
         # plt.show()
         print(isoF_outliers_values)
-        outliers_list = isoF_outliers_values.values.tolist()
+        outliers_list = finalScamsters.values.tolist()
 
 
         dict_data = {
-            "raw_data": new_data.values.tolist(),
+            "raw_data": past_data.values.tolist(),
             "outliers": outliers_list,
             "threshold_all": self.threshold_all(commodity, year, country),
             "average_rate_change": self.average_rate_change(commodity, country)
