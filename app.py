@@ -61,20 +61,19 @@ def home(commodity_name, year, country):
     if request.args.get(commodity_name) and request.args.get(year) and request.args.get(country):
         sellers = find_sellers(request.args.get(commodity_name), request.args.get(country))
         mkt_dict = map_mkt(request.args.get(commodity_name), request.args.get(country))
-        dashboard = Dashboard(request.args.get(commodity_name), request.args.get(country), request.args.get(year))
     else:
         dashboard = Dashboard(commodity_name, country, year)
         sellers = dashboard.find_sellers(commodity_name, country)
         mkt_dict = dashboard.map_mkt(commodity_name, country)
 
     # value error cases
-    if sellers is None:
-        dict_data = {
-            "errorInput": "No valid data present"
-        }
-        json_data = json.dumps(dict_data)
-        outliers_list = []
-        return json_data, outliers_list
+    # if sellers is None:
+    #     dict_data = {
+    #         "errorInput": "No valid data present"
+    #     }
+    #     json_data = json.dumps(dict_data)
+    #     outliers_list = []
+    #     return json_data, outliers_list
 
     anomaly_obj = dashboard.anomaly_detection(mkt_dict, year, commodity_name, country)
 
