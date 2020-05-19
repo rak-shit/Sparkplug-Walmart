@@ -144,9 +144,6 @@ class Dashboard:
         isoF_outliers_values = out_data[iso_forest.predict(out_data) == -1]
 
         isoF_outliers_values = isoF_outliers_values[(isoF_outliers_values["mp_price"] > self.threshold(commodity, year, country))]
-        leftOver = out_data[(out_data["mp_price"] > self.threshold(commodity, year, country))]
-
-        finalScamsters = leftOver.append(isoF_outliers_values, ignore_index=True)
 
         # plt.scatter(isoF_outliers_values.iloc[:, 0], isoF_outliers_values.iloc[:, 1].values.astype(int))
         # plt.xlabel('MKT')
@@ -154,7 +151,7 @@ class Dashboard:
         # plt.title('Visualization of raw data')
         # plt.show()
         print(isoF_outliers_values)
-        outliers_list = finalScamsters.values.tolist()
+        outliers_list = isoF_outliers_values.values.tolist()
 
 
         dict_data = {
